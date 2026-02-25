@@ -1,0 +1,40 @@
+# 미션 파일 형식: 단계번호|한국어미션|베트남어미션|타이머(초)
+# 타이머 0 = 무제한 (∞)
+# 이 파일을 수정하여 미션을 추가/삭제/변경할 수 있습니다.
+
+1|가볍게 입술 키스 30초|Hôn môi nhẹ nhàng 30 giây|30
+2|포옹하며 귀에 속삭이기 30초|Ôm và thì thầm vào tai 30 giây|30
+3|이마, 볼, 코, 목에 뽀뽀 연속으로 1분|Hôn trán, má, mũi, cổ liên tiếp 1 phút|60
+4|딥키스 1분|Hôn sâu 1 phút|60
+5|목 뒤와 귀 뒤쪽에 입술 대고 숨결 느끼기 1분|Đặt môi vào gáy và sau tai 1 phút|60
+6|귀 핥기 + 귀볼 물기 1분|Liếm tai + cắn nhẹ dái tai 1 phút|60
+7|목에 키스하고 살살 빨기 1분|Hôn và mút nhẹ cổ 1 phút|60
+8|상대방 손가락 하나씩 핥고 빨기 2분|Liếm và mút từng ngón tay đối phương 2 phút|120
+9|쇄골 & 어깨 라인 혀로 핥기 1분 30초|Liếm đường xương đòn & vai bằng lưỡi 1 phút 30 giây|90
+10|등 전체에 손끝으로 쓸어내리고 척추 라인 혀로 핥기 2분|Vuốt toàn lưng và liếm cột sống bằng lưỡi 2 phút|120
+11|배꼽 주변 혀로 핥고 입으로 빨기 1분 30초|Liếm và mút quanh rốn bằng miệng 1 phút 30 giây|90
+12|허벅지 안쪽 손으로 쓰다듬고 혀로 핥기 2분|Vuốt và liếm mặt trong đùi 2 phút|120
+13|발가락 하나씩 입으로 물고 혀로 핥기 2분|Ngậm và liếm từng ngón chân bằng miệng 2 phút|120
+14|겨드랑이 핥기 1분|Liếm nách 1 phút|60
+15|목부터 배꼽까지 혀로 핥으며 내려가기 2분|Liếm từ cổ xuống rốn bằng lưỡi 2 phút|120
+16|유두를 손가락으로 만지고 혀로 핥기 2분|Dùng ngón tay chạm và liếm núm vú bằng lưỡi 2 phút|120
+17|유두 입으로 빨기 2분|Mút núm vú bằng miệng 2 phút|120
+18|엉덩이 만지고 키스하고 혀로 핥기 2분|Chạm, hôn và liếm mông bằng lưỡi 2 phút|120
+19|유두 빨면서 손으로 허벅지 안쪽 쓰다듬기 3분|Mút núm vú đồng thời vuốt mặt trong đùi 3 phút|180
+20|허벅지 안쪽 입으로 키스하고 혀로 핥기 3분|Hôn và liếm mặt trong đùi bằng miệng 3 phút|180
+21|전신 손으로 천천히 탐색하며 마사지 5분|Dùng tay khám phá và massage toàn thân chậm rãi 5 phút|300
+22|유두 빨면서 손가락으로 허벅지 사이 자극 3분|Mút núm vú và dùng ngón tay kích thích giữa đùi 3 phút|180
+23|성기와 허벅지 사이 혀로 핥기 3분|Liếm vùng giữa bộ phận sinh dục và đùi bằng lưỡi 3 phút|180
+24|성기를 손으로 천천히 자극 3분|Dùng tay kích thích bộ phận sinh dục chậm rãi 3 phút|180
+25|성기를 혀로 핥기 3분|Liếm bộ phận sinh dục bằng lưỡi 3 phút|180
+26|성기를 입으로 빨기 3분|Mút bộ phận sinh dục bằng miệng 3 phút|180
+27|성기와 항문 사이(회음부)를 혀로 핥기 3분|Liếm vùng tầng sinh môn bằng lưỡi 3 phút|180
+28|항문 주변을 혀로 핥기 3분|Liếm quanh hậu môn bằng lưỡi 3 phút|180
+29|손으로 성기 자극하면서 유두 빨기 4분|Dùng tay kích thích bộ phận sinh dục đồng thời mút núm vú 4 phút|240
+30|상대방이 원하는 자세로 성기 자극 5분|Kích thích bằng bộ phận sinh dục theo tư thế đối phương muốn 5 phút|300
+31|성기 깊게 빨기 5분|Mút sâu bộ phận sinh dục 5 phút|300
+32|손가락으로 성기 자극하면서 혀로 핥기 5분|Dùng tay kích thích bộ phận sinh dục đồng thời liếm bằng lưỡi 5 phút|300
+33|역할 바꿔서 원하는 방식으로 성기 자극 5분|Đổi vai kích thích bằng bộ phận sinh dục theo cách muốn 5 phút|300
+34|서로 동시에 성기 자극 5분|Cùng kích thích bằng bộ phận sinh dục cho nhau đồng thời 5 phút|300
+35|원하는 것 모두 10분|Tất cả những gì muốn trong 10 phút|600
+36|서로 원하는 대로, 원하는 시간까지|Theo ý muốn của nhau, bao lâu tùy thích|0

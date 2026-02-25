@@ -1,0 +1,805 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>💕 Love Game</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Noto+Sans+KR:wght@300;400;500;700&display=swap');
+
+:root {
+  --rose:#e8436a; --rose-dark:#c02a50; --rose-light:#ff6b8a;
+  --gold:#d4a855; --gold-light:#f0c878;
+  --bg:#0d0608; --bg2:#1a0a0f; --bg3:#261018;
+  --text:#f5e6ea; --muted:#b08090;
+  --border:rgba(232,67,106,0.3);
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{width:100%;height:100%;background:var(--bg);color:var(--text);
+  font-family:'Noto Sans KR',sans-serif;overflow:hidden;position:fixed}
+
+/* ══ SCREENS ══ */
+.screen{
+  position:absolute;inset:0;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+  padding:max(env(safe-area-inset-top),28px) 24px max(env(safe-area-inset-bottom),20px);
+  background:radial-gradient(ellipse at 50% 0%,#3a0820 0%,var(--bg) 70%);
+  transition:opacity .4s,transform .4s;
+}
+.screen.hidden{opacity:0;pointer-events:none;transform:scale(.97)}
+
+/* ══ PASSWORD ══ */
+.lock-icon{font-size:52px;margin-bottom:14px;animation:hb 2s infinite}
+@keyframes hb{0%,100%{transform:scale(1)}50%{transform:scale(1.1)}}
+.t-main{font-family:'Playfair Display',serif;font-size:34px;font-style:italic;
+  color:var(--rose-light);text-shadow:0 0 30px rgba(232,67,106,.5);margin-bottom:6px}
+.t-sub{font-size:12px;color:var(--muted);letter-spacing:3px;text-transform:uppercase;margin-bottom:36px}
+.pin-row{display:flex;gap:14px;margin-bottom:28px}
+.pin-dot{width:18px;height:18px;border-radius:50%;border:2px solid var(--rose);
+  background:transparent;transition:background .2s,transform .15s}
+.pin-dot.filled{background:var(--rose);transform:scale(1.25)}
+.keypad{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;width:100%;max-width:270px}
+.key{height:62px;border-radius:16px;background:var(--bg3);border:1px solid var(--border);
+  color:var(--text);font-size:22px;font-weight:300;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;transition:background .15s,transform .1s}
+.key:active{background:var(--rose-dark);transform:scale(.92)}
+.key.del{font-size:17px;color:var(--muted)}
+.key.empty{background:transparent;border:none;pointer-events:none}
+.pin-err{color:var(--rose);font-size:13px;margin-top:10px;opacity:0;transition:opacity .3s}
+.pin-err.show{opacity:1}
+
+/* ══ MAIN ══ */
+.main-top{width:100%;display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}
+.m-title{font-family:'Playfair Display',serif;font-size:22px;font-style:italic;color:var(--rose-light)}
+.top-btns{display:flex;gap:7px}
+.icon-btn{padding:6px 12px;border-radius:18px;border:1px solid var(--border);
+  background:var(--bg3);color:var(--gold);font-size:12px;cursor:pointer;
+  font-family:'Noto Sans KR',sans-serif;white-space:nowrap}
+.icon-btn:active{background:var(--rose-dark);color:#fff}
+
+.progress-bar-wrap{width:100%;height:5px;background:var(--bg3);border-radius:3px;margin-bottom:20px;overflow:hidden}
+.progress-bar{height:100%;background:linear-gradient(90deg,var(--rose-dark),var(--rose-light));
+  border-radius:3px;transition:width .6s}
+
+.stack-info{text-align:center;margin-bottom:14px}
+.s-stage-lbl{font-size:11px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;margin-bottom:4px}
+.s-remain{font-size:13px;color:var(--gold)}
+
+/* ── STACKED CARD ── */
+.card-stack-area{
+  position:relative;width:210px;height:290px;margin:0 auto 30px;
+  cursor:pointer;flex-shrink:0;
+}
+.stack-shadow{position:absolute;border-radius:22px;
+  background:linear-gradient(135deg,#2a0d17,#180910);border:1px solid var(--border)}
+.stack-shadow.s3{width:188px;height:266px;top:18px;left:11px;opacity:.35;transform:rotate(6deg)}
+.stack-shadow.s2{width:200px;height:278px;top:9px;left:5px;opacity:.6;transform:rotate(3deg)}
+.stack-top{
+  position:absolute;width:210px;height:290px;top:0;left:0;border-radius:22px;
+  background:linear-gradient(145deg,#2e0d1b,#1c0a12);
+  border:1.5px solid rgba(232,67,106,.55);
+  box-shadow:0 8px 36px rgba(232,67,106,.3);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;
+  transition:transform .15s,box-shadow .15s;overflow:hidden;
+}
+.stack-top:active{transform:scale(.95);box-shadow:0 4px 16px rgba(232,67,106,.2)}
+.stack-top::before{
+  content:'';position:absolute;inset:0;border-radius:22px;
+  background:repeating-linear-gradient(45deg,rgba(232,67,106,.035) 0,rgba(232,67,106,.035) 1px,transparent 1px,transparent 13px);
+}
+.card-ht{font-size:30px;color:rgba(232,67,106,.25)}
+.card-num{font-family:'Playfair Display',serif;font-size:68px;color:var(--rose-light);
+  text-shadow:0 0 32px rgba(232,67,106,.55);line-height:1}
+.card-st{font-size:11px;color:var(--muted);letter-spacing:3px}
+.card-tap{font-size:11px;color:rgba(232,67,106,.4);letter-spacing:1px}
+
+.stack-top.all-done{background:linear-gradient(145deg,#100508,#0a0306);
+  border-color:rgba(80,30,40,.3);box-shadow:none;cursor:default}
+.stack-top.all-done .card-num{color:#3a1520;text-shadow:none}
+.stack-top.all-done .card-ht,.stack-top.all-done .card-st,
+.stack-top.all-done .card-tap{color:#2a1018;letter-spacing:1px}
+
+.main-btns{display:flex;gap:10px;width:100%}
+.btn-primary{flex:1;padding:15px;border-radius:14px;border:none;
+  background:linear-gradient(135deg,var(--rose),var(--rose-dark));
+  color:#fff;font-size:15px;font-weight:500;font-family:'Noto Sans KR',sans-serif;
+  cursor:pointer;box-shadow:0 4px 18px rgba(232,67,106,.35);transition:opacity .2s,transform .1s}
+.btn-primary:active{opacity:.85;transform:scale(.97)}
+.btn-reset{padding:15px 18px;border-radius:14px;border:1px solid var(--border);
+  background:var(--bg3);color:var(--muted);font-size:13px;
+  font-family:'Noto Sans KR',sans-serif;cursor:pointer;transition:background .2s}
+.btn-reset:active{background:var(--bg2)}
+
+/* ══ MISSION ══ */
+.ms-stage{font-size:11px;color:var(--muted);letter-spacing:3px;text-transform:uppercase;margin-bottom:10px}
+.ms-card{width:100%;background:linear-gradient(145deg,var(--bg3),#2a0e18);
+  border:1px solid var(--border);border-radius:20px;padding:24px 20px;
+  margin-bottom:18px;text-align:center;position:relative;overflow:hidden;flex-shrink:0}
+.ms-card::after{content:'♥';position:absolute;font-size:110px;
+  color:rgba(232,67,106,.04);bottom:-24px;right:-8px;font-family:serif;line-height:1}
+.ms-ko{font-size:17px;font-weight:500;line-height:1.6;margin-bottom:10px;color:var(--text)}
+.ms-vi{font-size:12px;color:var(--muted);line-height:1.6;font-style:italic}
+
+.timer-wrap{position:relative;width:124px;height:124px;margin:0 auto 18px;flex-shrink:0}
+.timer-wrap svg{width:100%;height:100%;transform:rotate(-90deg)}
+.timer-wrap circle{fill:none;stroke-width:7}
+.t-bg{stroke:#261018}.t-prog{stroke:var(--rose);stroke-linecap:round;transition:stroke-dashoffset 1s linear}
+.t-inner{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.t-count{font-family:'Playfair Display',serif;font-size:28px;color:var(--text);line-height:1}
+.t-unit{font-size:10px;color:var(--muted);letter-spacing:2px;margin-top:3px}
+.t-inf{font-family:'Playfair Display',serif;font-size:56px;color:var(--rose);line-height:1}
+
+.ms-btns{display:flex;gap:10px;width:100%}
+.btn-start{flex:2;padding:14px;border-radius:14px;border:none;
+  background:linear-gradient(135deg,var(--rose),var(--rose-dark));
+  color:#fff;font-size:15px;font-weight:500;font-family:'Noto Sans KR',sans-serif;
+  cursor:pointer;box-shadow:0 4px 16px rgba(232,67,106,.35);transition:opacity .2s,transform .1s}
+.btn-start:active{opacity:.85;transform:scale(.97)}
+.btn-start:disabled{opacity:.45}
+.btn-pass{flex:1;padding:14px;border-radius:14px;border:1px solid rgba(212,168,85,.4);
+  background:rgba(212,168,85,.08);color:var(--gold);font-size:13px;
+  font-family:'Noto Sans KR',sans-serif;cursor:pointer;transition:background .2s,transform .1s}
+.btn-pass:active{background:rgba(212,168,85,.2);transform:scale(.97)}
+.btn-ghost{width:100%;padding:12px;border-radius:14px;border:1px solid var(--border);
+  background:transparent;color:var(--muted);font-family:'Noto Sans KR',sans-serif;
+  font-size:13px;cursor:pointer;margin-top:8px}
+.btn-ghost:active{background:var(--bg3)}
+
+/* ══ PENALTY ══ */
+.pen-icon{font-size:44px;margin-bottom:8px}
+.pen-title{font-family:'Playfair Display',serif;font-size:26px;font-style:italic;
+  color:var(--gold);margin-bottom:4px}
+.pen-sub{font-size:12px;color:var(--muted);margin-bottom:22px;letter-spacing:1px}
+.pen-card{width:100%;background:linear-gradient(145deg,#1a1200,#251800);
+  border:1px solid rgba(212,168,85,.3);border-radius:20px;padding:26px 22px;margin-bottom:22px;text-align:center}
+.pen-num{font-size:10px;color:var(--gold);letter-spacing:3px;margin-bottom:10px;text-transform:uppercase}
+.pen-ko{font-size:17px;font-weight:500;line-height:1.6;margin-bottom:10px;color:var(--text)}
+.pen-vi{font-size:12px;color:var(--muted);font-style:italic;line-height:1.6}
+.btn-gold{width:100%;padding:15px;border-radius:14px;border:none;
+  background:linear-gradient(135deg,var(--gold),#b8882a);
+  color:#1a0a00;font-size:15px;font-weight:700;font-family:'Noto Sans KR',sans-serif;cursor:pointer}
+.btn-gold:active{opacity:.85}
+
+/* ══ EDITOR ══ */
+.screen.ed-screen{justify-content:flex-start;padding-top:max(env(safe-area-inset-top),20px);overflow:hidden}
+.ed-header{width:100%;display:flex;align-items:center;padding:16px 20px 10px;flex-shrink:0}
+.ed-title{font-family:'Playfair Display',serif;font-size:19px;font-style:italic;color:var(--rose-light);flex:1}
+.ed-tabs{display:flex;width:100%;border-bottom:1px solid var(--border);flex-shrink:0}
+.ed-tab{flex:1;padding:10px;border:none;background:transparent;color:var(--muted);
+  font-family:'Noto Sans KR',sans-serif;font-size:13px;cursor:pointer;
+  border-bottom:2px solid transparent;transition:color .2s}
+.ed-tab.active{color:var(--rose-light);border-bottom-color:var(--rose)}
+.ed-list{flex:1;overflow-y:auto;width:100%;padding:12px 16px;-webkit-overflow-scrolling:touch}
+.ed-list::-webkit-scrollbar{display:none}
+.ed-item{background:var(--bg3);border:1px solid var(--border);border-radius:14px;
+  padding:12px 14px;margin-bottom:10px}
+.ed-item-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.ed-num{font-size:11px;color:var(--gold);letter-spacing:2px}
+.ed-acts{display:flex;gap:8px}
+.ed-btn{padding:4px 10px;border-radius:8px;border:none;font-size:11px;cursor:pointer;
+  font-family:'Noto Sans KR',sans-serif}
+.eb-edit{background:rgba(212,168,85,.15);color:var(--gold)}
+.eb-del{background:rgba(232,67,106,.15);color:var(--rose)}
+.ed-ko{font-size:13px;color:var(--text);margin-bottom:3px;line-height:1.4}
+.ed-vi{font-size:11px;color:var(--muted);font-style:italic;line-height:1.4}
+.ed-secs{font-size:11px;color:rgba(212,168,85,.55);margin-top:4px}
+.ed-add{width:100%;padding:14px;border-radius:14px;border:1px dashed var(--border);
+  background:transparent;color:var(--rose-light);font-size:14px;
+  font-family:'Noto Sans KR',sans-serif;cursor:pointer;margin-bottom:40px}
+.ed-add:active{background:var(--bg3)}
+
+/* ══ MODAL ══ */
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:200;
+  display:flex;align-items:flex-end;justify-content:center;
+  opacity:0;pointer-events:none;transition:opacity .3s}
+.modal-bg.show{opacity:1;pointer-events:all}
+.modal-box{width:100%;max-width:480px;background:#1e0c13;border-radius:24px 24px 0 0;
+  padding:20px 20px max(env(safe-area-inset-bottom),20px);
+  transform:translateY(50px);transition:transform .3s}
+.modal-bg.show .modal-box{transform:translateY(0)}
+.modal-ttl{font-family:'Playfair Display',serif;font-size:18px;color:var(--rose-light);
+  margin-bottom:16px;text-align:center}
+.f-lbl{font-size:11px;color:var(--muted);letter-spacing:1px;margin-bottom:5px;text-transform:uppercase}
+.f-inp{width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:10px;
+  padding:11px 14px;color:var(--text);font-size:14px;font-family:'Noto Sans KR',sans-serif;
+  margin-bottom:12px;outline:none}
+.f-inp:focus{border-color:var(--rose)}
+.modal-btns{display:flex;gap:10px;margin-top:4px}
+.m-save{flex:2;padding:13px;border-radius:12px;border:none;
+  background:linear-gradient(135deg,var(--rose),var(--rose-dark));
+  color:#fff;font-size:14px;font-weight:500;font-family:'Noto Sans KR',sans-serif;cursor:pointer}
+.m-cancel{flex:1;padding:13px;border-radius:12px;border:1px solid var(--border);
+  background:transparent;color:var(--muted);font-size:14px;
+  font-family:'Noto Sans KR',sans-serif;cursor:pointer}
+
+/* ══ OVERLAYS ══ */
+#fw-canvas{position:fixed;inset:0;pointer-events:none;z-index:999;opacity:0;transition:opacity .3s}
+#fw-canvas.show{opacity:1}
+.done-ov{position:fixed;inset:0;background:rgba(0,0,0,.88);z-index:998;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:32px;opacity:0;pointer-events:none;transition:opacity .4s}
+.done-ov.show{opacity:1;pointer-events:all}
+.do-icon{font-size:62px;margin-bottom:14px}
+.do-msg{font-family:'Playfair Display',serif;font-size:26px;font-style:italic;
+  color:var(--rose-light);text-align:center;margin-bottom:6px}
+.do-sub{font-size:13px;color:var(--muted);text-align:center;margin-bottom:28px}
+
+/* ══ DECO ══ */
+#deco{position:fixed;inset:0;pointer-events:none;overflow:hidden;z-index:0}
+.dh{position:absolute;color:rgba(232,67,106,.05);animation:fup linear infinite;pointer-events:none}
+@keyframes fup{0%{transform:translateY(110vh) rotate(0);opacity:0}
+  10%{opacity:1}90%{opacity:.4}100%{transform:translateY(-10vh) rotate(360deg);opacity:0}}
+</style>
+</head>
+<body>
+
+<div id="deco"></div>
+<canvas id="fw-canvas"></canvas>
+
+<!-- Done overlay -->
+<div class="done-ov" id="doneOv">
+  <div class="do-icon">🎉</div>
+  <div class="do-msg" id="doMsg">미션 완료!</div>
+  <div class="do-sub" id="doSub">Hoàn thành nhiệm vụ!</div>
+  <button class="btn-primary" style="max-width:260px;margin-top:0" onclick="closeDone()">다음 미션 · Tiếp tục</button>
+</div>
+
+<!-- Edit modal -->
+<div class="modal-bg" id="editModal">
+  <div class="modal-box">
+    <div class="modal-ttl" id="modalTtl">수정</div>
+    <div class="f-lbl">한국어</div>
+    <input class="f-inp" id="fKo" placeholder="한국어 내용" autocomplete="off">
+    <div class="f-lbl">Tiếng Việt</div>
+    <input class="f-inp" id="fVi" placeholder="Nội dung tiếng Việt" autocomplete="off">
+    <div class="f-lbl" id="secsLbl">시간 (초) — 0 = 무제한</div>
+    <input class="f-inp" id="fSecs" type="number" placeholder="초 입력 (예: 60)" inputmode="numeric">
+    <div class="modal-btns">
+      <button class="m-cancel" onclick="closeModal()">취소</button>
+      <button class="m-save" onclick="saveItem()">저장 ✓</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ 1. PASSWORD ══ -->
+<div class="screen" id="sPW">
+  <div class="lock-icon">🔒</div>
+  <div class="t-main">Love Game</div>
+  <div class="t-sub">For Two ♥</div>
+  <div class="pin-row">
+    <div class="pin-dot" id="d0"></div><div class="pin-dot" id="d1"></div>
+    <div class="pin-dot" id="d2"></div><div class="pin-dot" id="d3"></div>
+  </div>
+  <div class="keypad">
+    <button class="key" onclick="kp('1')">1</button>
+    <button class="key" onclick="kp('2')">2</button>
+    <button class="key" onclick="kp('3')">3</button>
+    <button class="key" onclick="kp('4')">4</button>
+    <button class="key" onclick="kp('5')">5</button>
+    <button class="key" onclick="kp('6')">6</button>
+    <button class="key" onclick="kp('7')">7</button>
+    <button class="key" onclick="kp('8')">8</button>
+    <button class="key" onclick="kp('9')">9</button>
+    <button class="key empty"></button>
+    <button class="key" onclick="kp('0')">0</button>
+    <button class="key del" onclick="kdel()">⌫</button>
+  </div>
+  <div class="pin-err" id="pinErr">비밀번호 오류 · Sai mật khẩu</div>
+</div>
+
+<!-- ══ 2. MAIN ══ -->
+<div class="screen hidden" id="sMain">
+  <div class="main-top">
+    <div class="m-title">Love Game 💕</div>
+    <div class="top-btns">
+      <button class="icon-btn" onclick="goEditor()">✏️</button>
+      <button class="icon-btn" onclick="toggleLang()" id="langBtn">🌐 VI</button>
+      <button class="icon-btn" onclick="go('sPW')">🔒</button>
+    </div>
+  </div>
+
+  <div class="progress-bar-wrap"><div class="progress-bar" id="progBar" style="width:0%"></div></div>
+
+  <div class="stack-info">
+    <div class="s-stage-lbl" id="stageLbl">클릭해서 미션 확인</div>
+    <div class="s-remain" id="remainLbl"></div>
+  </div>
+
+  <div class="card-stack-area" id="cardArea" onclick="onCardTap()">
+    <div class="stack-shadow s3"></div>
+    <div class="stack-shadow s2"></div>
+    <div class="stack-top" id="stackTop">
+      <div class="card-ht">♥</div>
+      <div class="card-num" id="cardNum">1</div>
+      <div class="card-st" id="cardSt">STAGE 1</div>
+      <div class="card-tap" id="cardTap">TAP TO REVEAL</div>
+    </div>
+  </div>
+
+  <div class="main-btns">
+    <button class="btn-primary" onclick="onCardTap()" id="mainTapBtn">카드 뽑기 · Rút thẻ</button>
+    <button class="btn-reset" onclick="resetGame()">↺</button>
+  </div>
+</div>
+
+<!-- ══ 3. MISSION ══ -->
+<div class="screen hidden" id="sMission">
+  <div class="ms-stage" id="msStage">STAGE 1 / 36</div>
+  <div class="ms-card">
+    <div class="ms-ko" id="msKo">—</div>
+    <div class="ms-vi" id="msVi">—</div>
+  </div>
+  <div class="timer-wrap">
+    <svg viewBox="0 0 100 100">
+      <circle class="t-bg" cx="50" cy="50" r="44"/>
+      <circle class="t-prog" id="tCirc" cx="50" cy="50" r="44"
+        stroke-dasharray="276.46" stroke-dashoffset="0"/>
+    </svg>
+    <div class="t-inner">
+      <div class="t-count" id="tCount">--</div>
+      <div class="t-unit" id="tUnit">SEC</div>
+    </div>
+  </div>
+  <div class="ms-btns">
+    <button class="btn-start" id="btnStart" onclick="startTimer()">▶ 시작 · Bắt đầu</button>
+    <button class="btn-pass" onclick="doPass()">패스 · Bỏ qua</button>
+  </div>
+  <button class="btn-ghost" onclick="go('sMain')">← 뒤로 · Quay lại</button>
+</div>
+
+<!-- ══ 4. PENALTY ══ -->
+<div class="screen hidden" id="sPenalty">
+  <div class="pen-icon">⚡</div>
+  <div class="pen-title">벌칙 · Hình phạt</div>
+  <div class="pen-sub">패스했으니 벌칙을 받으세요!</div>
+  <div class="pen-card">
+    <div class="pen-num" id="penNum">PENALTY #1</div>
+    <div class="pen-ko" id="penKo">—</div>
+    <div class="pen-vi" id="penVi">—</div>
+  </div>
+  <button class="btn-gold" onclick="penaltyDone()">확인 · Xác nhận ✓</button>
+  <button class="btn-ghost" style="margin-top:10px" onclick="go('sMain')">← 뒤로</button>
+</div>
+
+<!-- ══ 5. EDITOR ══ -->
+<div class="screen ed-screen hidden" id="sEditor">
+  <div class="ed-header">
+    <div class="ed-title">✏️ 편집 · Chỉnh sửa</div>
+    <button class="icon-btn" onclick="go('sMain')">완료 ✓</button>
+  </div>
+  <div class="ed-tabs">
+    <button class="ed-tab active" id="tabM" onclick="switchTab('mission')">미션</button>
+    <button class="ed-tab" id="tabP" onclick="switchTab('penalty')">벌칙</button>
+  </div>
+  <div class="ed-list" id="edList"></div>
+</div>
+
+<script>
+// ══════════════════════════════════════════════════════
+//  DEFAULT DATA
+// ══════════════════════════════════════════════════════
+const DEF_M = [
+  {num:1,ko:"가볍게 입술 키스 30초",vi:"Hôn môi nhẹ nhàng 30 giây",secs:30},
+  {num:2,ko:"포옹하며 귀에 속삭이기 30초",vi:"Ôm và thì thầm vào tai 30 giây",secs:30},
+  {num:3,ko:"이마, 볼, 코, 목에 뽀뽀 연속으로 1분",vi:"Hôn trán, má, mũi, cổ liên tiếp 1 phút",secs:60},
+  {num:4,ko:"딥키스 1분",vi:"Hôn sâu 1 phút",secs:60},
+  {num:5,ko:"목 뒤와 귀 뒤쪽에 입술 대고 숨결 느끼기 1분",vi:"Đặt môi vào gáy và sau tai 1 phút",secs:60},
+  {num:6,ko:"귀 핥기 + 귀볼 물기 1분",vi:"Liếm tai + cắn nhẹ dái tai 1 phút",secs:60},
+  {num:7,ko:"목에 키스하고 살살 빨기 1분",vi:"Hôn và mút nhẹ cổ 1 phút",secs:60},
+  {num:8,ko:"상대방 손가락 하나씩 핥고 빨기 2분",vi:"Liếm và mút từng ngón tay đối phương 2 phút",secs:120},
+  {num:9,ko:"쇄골 & 어깨 라인 혀로 핥기 1분 30초",vi:"Liếm đường xương đòn & vai bằng lưỡi 1 phút 30 giây",secs:90},
+  {num:10,ko:"등 전체에 손끝으로 쓸어내리고 척추 라인 혀로 핥기 2분",vi:"Vuốt toàn lưng và liếm cột sống bằng lưỡi 2 phút",secs:120},
+  {num:11,ko:"배꼽 주변 혀로 핥고 입으로 빨기 1분 30초",vi:"Liếm và mút quanh rốn bằng miệng 1 phút 30 giây",secs:90},
+  {num:12,ko:"허벅지 안쪽 손으로 쓰다듬고 혀로 핥기 2분",vi:"Vuốt và liếm mặt trong đùi 2 phút",secs:120},
+  {num:13,ko:"발가락 하나씩 입으로 물고 혀로 핥기 2분",vi:"Ngậm và liếm từng ngón chân bằng miệng 2 phút",secs:120},
+  {num:14,ko:"겨드랑이 핥기 1분",vi:"Liếm nách 1 phút",secs:60},
+  {num:15,ko:"목부터 배꼽까지 혀로 핥으며 내려가기 2분",vi:"Liếm từ cổ xuống rốn bằng lưỡi 2 phút",secs:120},
+  {num:16,ko:"유두를 손가락으로 만지고 혀로 핥기 2분",vi:"Dùng ngón tay chạm và liếm núm vú bằng lưỡi 2 phút",secs:120},
+  {num:17,ko:"유두 입으로 빨기 2분",vi:"Mút núm vú bằng miệng 2 phút",secs:120},
+  {num:18,ko:"엉덩이 만지고 키스하고 혀로 핥기 2분",vi:"Chạm, hôn và liếm mông bằng lưỡi 2 phút",secs:120},
+  {num:19,ko:"유두 빨면서 손으로 허벅지 안쪽 쓰다듬기 3분",vi:"Mút núm vú đồng thời vuốt mặt trong đùi 3 phút",secs:180},
+  {num:20,ko:"허벅지 안쪽 입으로 키스하고 혀로 핥기 3분",vi:"Hôn và liếm mặt trong đùi bằng miệng 3 phút",secs:180},
+  {num:21,ko:"전신 손으로 천천히 탐색하며 마사지 5분",vi:"Dùng tay khám phá và massage toàn thân chậm rãi 5 phút",secs:300},
+  {num:22,ko:"유두 빨면서 손가락으로 허벅지 사이 자극 3분",vi:"Mút núm vú và dùng ngón tay kích thích giữa đùi 3 phút",secs:180},
+  {num:23,ko:"성기와 허벅지 사이 혀로 핥기 3분",vi:"Liếm vùng giữa bộ phận sinh dục và đùi bằng lưỡi 3 phút",secs:180},
+  {num:24,ko:"성기를 손으로 천천히 자극 3분",vi:"Dùng tay kích thích bộ phận sinh dục chậm rãi 3 phút",secs:180},
+  {num:25,ko:"성기를 혀로 핥기 3분",vi:"Liếm bộ phận sinh dục bằng lưỡi 3 phút",secs:180},
+  {num:26,ko:"성기를 입으로 빨기 3분",vi:"Mút bộ phận sinh dục bằng miệng 3 phút",secs:180},
+  {num:27,ko:"성기와 항문 사이(회음부)를 혀로 핥기 3분",vi:"Liếm vùng tầng sinh môn bằng lưỡi 3 phút",secs:180},
+  {num:28,ko:"항문 주변을 혀로 핥기 3분",vi:"Liếm quanh hậu môn bằng lưỡi 3 phút",secs:180},
+  {num:29,ko:"손가락으로 성기 자극하면서 유두 빨기 4분",vi:"Dùng ngón tay kích thích bộ phận sinh dục đồng thời mút núm vú 4 phút",secs:240},
+  {num:30,ko:"상대방이 원하는 자세로 구강 자극 5분",vi:"Kích thích bằng miệng theo tư thế đối phương muốn 5 phút",secs:300},
+  {num:31,ko:"성기 깊게 빨기 5분",vi:"Mút sâu bộ phận sinh dục 5 phút",secs:300},
+  {num:32,ko:"손가락 두 개로 성기 자극하면서 혀로 핥기 5분",vi:"Dùng hai ngón tay kích thích bộ phận sinh dục đồng thời liếm bằng lưỡi 5 phút",secs:300},
+  {num:33,ko:"역할 바꿔서 원하는 방식으로 구강 자극 5분",vi:"Đổi vai kích thích bằng miệng theo cách muốn 5 phút",secs:300},
+  {num:34,ko:"서로 동시에 구강 자극 5분",vi:"Cùng kích thích bằng miệng cho nhau đồng thời 5 phút",secs:300},
+  {num:35,ko:"원하는 것 모두 10분",vi:"Tất cả những gì muốn trong 10 phút",secs:600},
+  {num:36,ko:"서로 원하는 대로, 원하는 시간까지",vi:"Theo ý muốn của nhau, bao lâu tùy thích",secs:0}
+];
+const DEF_P = [
+  {num:1,ko:"상대방 앞에서 섹시 댄스 1분",vi:"Nhảy sexy trước mặt đối phương 1 phút"},
+  {num:2,ko:"상대방 발가락 하나씩 입으로 빨기 1분",vi:"Mút từng ngón chân đối phương bằng miệng 1 phút"},
+  {num:3,ko:"속옷만 입고 방 한 바퀴 천천히 걷기",vi:"Mặc đồ lót đi vòng quanh phòng chậm rãi"},
+  {num:4,ko:"상대방이 원하는 곳에 키스 2분",vi:"Hôn vị trí đối phương muốn trong 2 phút"},
+  {num:5,ko:"상대방 앞에서 천천히 옷 한 벌 벗기",vi:"Cởi một lớp quần áo chậm rãi trước mặt đối phương"},
+  {num:6,ko:"상대방이 시키는 야한 포즈 3가지 취하기",vi:"Tạo 3 tư thế gợi cảm theo lệnh đối phương"},
+  {num:7,ko:"귀에 대고 가장 야한 말 속삭이기",vi:"Thì thầm câu gợi cảm nhất vào tai đối phương"},
+  {num:8,ko:"상대방 겨드랑이 핥기 1분",vi:"Liếm nách đối phương 1 phút"},
+  {num:9,ko:"눈 가리고 상대방 몸 전체 손으로 탐색 2분",vi:"Bịt mắt dùng tay khám phá toàn thân đối phương 2 phút"},
+  {num:10,ko:"상대방 유두 빨기 2분",vi:"Mút núm vú đối phương 2 phút"},
+  {num:11,ko:"상대방이 시키는 대로 속옷만 입고 춤추기 2분",vi:"Mặc đồ lót nhảy theo lệnh đối phương 2 phút"},
+  {num:12,ko:"상대방 전신 구석구석 혀로 핥기 3분",vi:"Liếm khắp toàn thân đối phương bằng lưỡi 3 phút"},
+  {num:13,ko:"상대방 성기를 혀로 핥고 입으로 빨기 3분",vi:"Liếm và mút bộ phận sinh dục đối phương 3 phút"},
+  {num:14,ko:"상대방이 원하는 자세, 원하는 방법으로 5분",vi:"Theo tư thế & cách đối phương muốn trong 5 phút"},
+  {num:15,ko:"상대방이 원하는 것 무엇이든 10분 (거절 불가)",vi:"Bất kỳ điều gì đối phương muốn 10 phút (không được từ chối)"}
+];
+
+// ══════════════════════════════════════════════════════
+//  STATE
+// ══════════════════════════════════════════════════════
+const PW = '1112';
+let pin='', lang='ko';
+let missions=[], penalties=[], penPool=[];
+let currentStage=0, currentCard=null;
+let timerSecs=0,timerTotal=0,timerIv=null,timerOn=false;
+const CIRC=276.46;
+let edTab='mission', editIdx=-1;
+
+// ══════════════════════════════════════════════════════
+//  INIT
+// ══════════════════════════════════════════════════════
+window.onload=()=>{loadData();buildDeco();};
+
+async function loadData(){
+  // 1) Try loading from txt files (web server)
+  let mLoaded=false, pLoaded=false;
+  try{
+    const [mr,pr]=await Promise.all([
+      fetch('missions.txt?v='+Date.now()),
+      fetch('penalties.txt?v='+Date.now())
+    ]);
+    if(mr.ok&&pr.ok){
+      const mt=await mr.text();
+      const pt=await pr.text();
+      const pm=parseMissions(mt);
+      const pp=parsePenalties(pt);
+      if(pm.length>0&&pp.length>0){
+        missions=pm; penalties=pp;
+        // also save to localStorage so editor works
+        localStorage.setItem('lgM2',JSON.stringify(missions));
+        localStorage.setItem('lgP2',JSON.stringify(penalties));
+        mLoaded=true; pLoaded=true;
+      }
+    }
+  }catch(e){}
+
+  // 2) Fallback: localStorage → default
+  if(!mLoaded){
+    try{const sm=localStorage.getItem('lgM2');missions=sm?JSON.parse(sm):JSON.parse(JSON.stringify(DEF_M));}
+    catch(e){missions=JSON.parse(JSON.stringify(DEF_M));}
+  }
+  if(!pLoaded){
+    try{const sp=localStorage.getItem('lgP2');penalties=sp?JSON.parse(sp):JSON.parse(JSON.stringify(DEF_P));}
+    catch(e){penalties=JSON.parse(JSON.stringify(DEF_P));}
+  }
+
+  try{const pg=localStorage.getItem('lgStage');currentStage=pg?parseInt(pg):0;}catch(e){currentStage=0;}
+  if(currentStage>=missions.length)currentStage=0;
+  resetPP();
+  updateMain();
+}
+
+// Parse missions.txt: num|ko|vi|secs  (lines starting with # are comments)
+function parseMissions(txt){
+  return txt.split('\n')
+    .map(l=>l.trim()).filter(l=>l&&!l.startsWith('#'))
+    .map(l=>{const p=l.split('|');if(p.length<4)return null;
+      return{num:parseInt(p[0]),ko:p[1].trim(),vi:p[2].trim(),secs:parseInt(p[3])||0};})
+    .filter(Boolean);
+}
+// Parse penalties.txt: num|ko|vi
+function parsePenalties(txt){
+  return txt.split('\n')
+    .map(l=>l.trim()).filter(l=>l&&!l.startsWith('#'))
+    .map(l=>{const p=l.split('|');if(p.length<3)return null;
+      return{num:parseInt(p[0]),ko:p[1].trim(),vi:p[2].trim()};})
+    .filter(Boolean);
+}
+
+function saveData(){localStorage.setItem('lgM2',JSON.stringify(missions));localStorage.setItem('lgP2',JSON.stringify(penalties));}
+function saveProg(){localStorage.setItem('lgStage',String(currentStage));}
+function resetPP(){penPool=[...penalties].sort(()=>Math.random()-.5);}
+
+// ══════════════════════════════════════════════════════
+//  PASSWORD
+// ══════════════════════════════════════════════════════
+function kp(k){
+  if(pin.length>=4)return;
+  pin+=k;dots();
+  if(pin.length===4){
+    setTimeout(()=>{
+      if(pin===PW){go('sMain');updateMain();pin='';dots();}
+      else{
+        document.getElementById('pinErr').classList.add('show');
+        [0,1,2,3].forEach(i=>{const d=document.getElementById('d'+i);d.style.borderColor='var(--rose)';d.style.background='rgba(232,67,106,.3)';});
+        setTimeout(()=>{pin='';dots();document.getElementById('pinErr').classList.remove('show');[0,1,2,3].forEach(i=>{const d=document.getElementById('d'+i);d.style.borderColor='';d.style.background='';});},700);
+      }
+    },150);
+  }
+}
+function kdel(){pin=pin.slice(0,-1);dots();}
+function dots(){[0,1,2,3].forEach(i=>document.getElementById('d'+i).classList.toggle('filled',i<pin.length));}
+
+// ══════════════════════════════════════════════════════
+//  SCREENS
+// ══════════════════════════════════════════════════════
+function go(id){document.querySelectorAll('.screen').forEach(s=>s.classList.add('hidden'));document.getElementById(id).classList.remove('hidden');}
+
+// ══════════════════════════════════════════════════════
+//  LANG
+// ══════════════════════════════════════════════════════
+function toggleLang(){
+  lang=lang==='ko'?'vi':'ko';
+  document.getElementById('langBtn').textContent='🌐 '+(lang==='ko'?'VI':'KO');
+  updateMain();
+}
+
+// ══════════════════════════════════════════════════════
+//  MAIN / CARD STACK
+// ══════════════════════════════════════════════════════
+function updateMain(){
+  const total=missions.length, done=currentStage>=total;
+  const top=document.getElementById('stackTop');
+  document.getElementById('progBar').style.width=((Math.min(currentStage,total)/total)*100)+'%';
+  document.getElementById('mainTapBtn').disabled=done;
+
+  if(done){
+    top.classList.add('all-done');
+    document.getElementById('cardNum').textContent='✓';
+    document.getElementById('cardSt').textContent=lang==='ko'?'모든 미션 완료!':'Hoàn thành!';
+    document.getElementById('cardTap').textContent='';
+    document.getElementById('stageLbl').textContent=lang==='ko'?'🎉 게임 종료':'🎉 Kết thúc';
+    document.getElementById('remainLbl').textContent='';
+  } else {
+    top.classList.remove('all-done');
+    const m=missions[currentStage];
+    document.getElementById('cardNum').textContent=m.num;
+    document.getElementById('cardSt').textContent=`STAGE ${m.num}`;
+    document.getElementById('cardTap').textContent='TAP TO REVEAL';
+    document.getElementById('stageLbl').textContent=lang==='ko'?'클릭해서 미션 확인':'Nhấn để xem nhiệm vụ';
+    const rem=total-currentStage;
+    document.getElementById('remainLbl').textContent=lang==='ko'?`남은 미션: ${rem}개`:`Còn lại: ${rem} nhiệm vụ`;
+  }
+}
+
+function onCardTap(){
+  if(currentStage>=missions.length)return;
+  currentCard=missions[currentStage];
+  openMission(currentCard);
+}
+
+function resetGame(){
+  if(!confirm('게임을 처음부터 다시 시작할까요?\nBắt đầu lại từ đầu?'))return;
+  currentStage=0;saveProg();resetPP();updateMain();
+}
+
+// ══════════════════════════════════════════════════════
+//  MISSION
+// ══════════════════════════════════════════════════════
+function openMission(m){
+  stopTimer();timerOn=false;
+  document.getElementById('msStage').textContent=`STAGE ${m.num} / ${missions.length}`;
+  document.getElementById('msKo').textContent=m.ko;
+  document.getElementById('msVi').textContent=m.vi;
+  const btn=document.getElementById('btnStart');
+  btn.textContent='▶ 시작 · Bắt đầu';btn.disabled=false;btn.onclick=startTimer;
+  if(m.secs===0){
+    document.getElementById('tCount').innerHTML='<span class="t-inf">∞</span>';
+    document.getElementById('tUnit').textContent='';
+    document.getElementById('tCirc').style.strokeDashoffset='0';
+  } else {
+    document.getElementById('tCount').textContent=fmt(m.secs);
+    document.getElementById('tUnit').textContent=m.secs>=60?'MIN':'SEC';
+    document.getElementById('tCirc').style.strokeDashoffset='0';
+  }
+  go('sMission');
+}
+
+function fmt(s){
+  if(s>=60){const m=Math.floor(s/60),r=s%60;return r?`${m}:${r.toString().padStart(2,'0')}`:`${m}:00`;}
+  return s+'s';
+}
+
+function startTimer(){
+  if(!currentCard)return;
+  if(currentCard.secs===0){
+    const btn=document.getElementById('btnStart');
+    btn.textContent='✓ 완료 · Hoàn thành';btn.onclick=missionDone;return;
+  }
+  if(timerOn)return;
+  timerOn=true;timerSecs=currentCard.secs;timerTotal=currentCard.secs;
+  const btn=document.getElementById('btnStart');
+  btn.textContent='⏳ 진행중...';btn.disabled=true;
+  timerIv=setInterval(()=>{
+    timerSecs--;
+    document.getElementById('tCirc').style.strokeDashoffset=CIRC*(1-timerSecs/timerTotal);
+    document.getElementById('tCount').textContent=fmt(timerSecs);
+    if(timerSecs<=0){stopTimer();missionDone();}
+  },1000);
+}
+
+function stopTimer(){clearInterval(timerIv);timerIv=null;timerOn=false;}
+
+function missionDone(){
+  stopTimer();currentStage++;saveProg();updateMain();
+  launchFW();
+  document.getElementById('doMsg').textContent=lang==='ko'?'미션 완료! 🎉':'Hoàn thành nhiệm vụ! 🎉';
+  document.getElementById('doSub').textContent=lang==='ko'?'다음 미션으로!':'Sang nhiệm vụ tiếp theo!';
+  document.getElementById('doneOv').classList.add('show');
+  playBeep();
+}
+
+function closeDone(){document.getElementById('doneOv').classList.remove('show');stopFW();go('sMain');}
+
+// ══════════════════════════════════════════════════════
+//  PASS / PENALTY
+// ══════════════════════════════════════════════════════
+function doPass(){
+  stopTimer();
+  // Advance to next mission (pass counts as completing current stage)
+  currentStage++;
+  saveProg();
+  updateMain();
+  // Show random penalty
+  if(penPool.length===0)resetPP();
+  const p=penPool.pop();
+  document.getElementById('penNum').textContent=`PENALTY #${p.num}`;
+  document.getElementById('penKo').textContent=p.ko;
+  document.getElementById('penVi').textContent=p.vi;
+  go('sPenalty');
+}
+
+// After penalty done → go to main (which now shows the NEXT mission)
+function penaltyDone(){
+  go('sMain');
+}
+
+// ══════════════════════════════════════════════════════
+//  EDITOR
+// ══════════════════════════════════════════════════════
+function goEditor(){edTab='mission';switchTab('mission');go('sEditor');}
+
+function switchTab(t){
+  edTab=t;
+  document.getElementById('tabM').classList.toggle('active',t==='mission');
+  document.getElementById('tabP').classList.toggle('active',t==='penalty');
+  document.getElementById('tabM').textContent=`미션 (${missions.length})`;
+  document.getElementById('tabP').textContent=`벌칙 (${penalties.length})`;
+  renderList();
+}
+
+function renderList(){
+  const list=document.getElementById('edList');
+  const items=edTab==='mission'?missions:penalties;
+  const isMission=edTab==='mission';
+  list.innerHTML='';
+  items.forEach((item,idx)=>{
+    const d=document.createElement('div');d.className='ed-item';
+    const st=isMission?`<div class="ed-secs">⏱ ${item.secs===0?'무제한':fmt(item.secs)}</div>`:'';
+    d.innerHTML=`
+      <div class="ed-item-hdr">
+        <span class="ed-num">#${item.num}</span>
+        <span class="ed-acts">
+          <button class="ed-btn eb-edit" onclick="openEdit(${idx})">수정</button>
+          <button class="ed-btn eb-del" onclick="delItem(${idx})">삭제</button>
+        </span>
+      </div>
+      <div class="ed-ko">${item.ko}</div>
+      <div class="ed-vi">${item.vi}</div>${st}`;
+    list.appendChild(d);
+  });
+  const ab=document.createElement('button');ab.className='ed-add';
+  ab.textContent=`+ ${isMission?'미션 추가':'벌칙 추가'}`;ab.onclick=()=>openEdit(-1);
+  list.appendChild(ab);
+}
+
+function openEdit(idx){
+  editIdx=idx;
+  const isMission=edTab==='mission';
+  const items=isMission?missions:penalties;
+  document.getElementById('modalTtl').textContent=idx===-1?(isMission?'미션 추가':'벌칙 추가'):(isMission?'미션 수정':'벌칙 수정');
+  const showSecs=isMission;
+  document.getElementById('secsLbl').style.display=showSecs?'block':'none';
+  document.getElementById('fSecs').style.display=showSecs?'block':'none';
+  if(idx===-1){document.getElementById('fKo').value='';document.getElementById('fVi').value='';document.getElementById('fSecs').value='';}
+  else{const it=items[idx];document.getElementById('fKo').value=it.ko;document.getElementById('fVi').value=it.vi;document.getElementById('fSecs').value=isMission?it.secs:'';}
+  document.getElementById('editModal').classList.add('show');
+  setTimeout(()=>document.getElementById('fKo').focus(),300);
+}
+
+function closeModal(){document.getElementById('editModal').classList.remove('show');}
+
+function saveItem(){
+  const ko=document.getElementById('fKo').value.trim();
+  const vi=document.getElementById('fVi').value.trim();
+  const secs=parseInt(document.getElementById('fSecs').value)||0;
+  if(!ko||!vi){alert('내용을 입력해주세요.');return;}
+  const isMission=edTab==='mission';
+  const items=isMission?missions:penalties;
+  if(editIdx===-1){
+    const mx=items.length>0?Math.max(...items.map(i=>i.num)):0;
+    if(isMission)items.push({num:mx+1,ko,vi,secs});
+    else items.push({num:mx+1,ko,vi});
+  } else {
+    if(isMission)items[editIdx]={...items[editIdx],ko,vi,secs};
+    else items[editIdx]={...items[editIdx],ko,vi};
+  }
+  saveData();closeModal();switchTab(edTab);
+  if(currentStage>=missions.length){currentStage=Math.max(0,missions.length-1);saveProg();}
+  updateMain();
+}
+
+function delItem(idx){
+  const items=edTab==='mission'?missions:penalties;
+  if(!confirm(`#${items[idx].num} 삭제할까요?`))return;
+  items.splice(idx,1);
+  items.forEach((it,i)=>it.num=i+1);
+  saveData();switchTab(edTab);
+  if(currentStage>=missions.length){currentStage=Math.max(0,missions.length-1);saveProg();}
+  updateMain();
+}
+
+// ══════════════════════════════════════════════════════
+//  FIREWORKS
+// ══════════════════════════════════════════════════════
+const fwC=document.getElementById('fw-canvas'),fwX=fwC.getContext('2d');
+let fwP=[],fwIv=null,fwRaf=null;
+function launchFW(){
+  fwC.width=innerWidth;fwC.height=innerHeight;fwC.classList.add('show');fwP=[];
+  for(let i=0;i<5;i++)setTimeout(burst,i*280);
+  fwRaf=requestAnimationFrame(drawFW);fwIv=setInterval(burst,520);
+  setTimeout(stopFW,4500);
+}
+function burst(){
+  const x=Math.random()*fwC.width,y=Math.random()*fwC.height*.65+30;
+  const cs=['#e8436a','#ff6b8a','#d4a855','#f0c878','#fff','#ffb3c6'];
+  const c=cs[Math.floor(Math.random()*cs.length)];
+  for(let i=0;i<55;i++){const a=(Math.PI*2/55)*i,sp=Math.random()*4+1;
+    fwP.push({x,y,vx:Math.cos(a)*sp,vy:Math.sin(a)*sp,alpha:1,c,sz:Math.random()*3+1,dc:Math.random()*.022+.013});}
+}
+function drawFW(){
+  fwX.clearRect(0,0,fwC.width,fwC.height);fwP=fwP.filter(p=>p.alpha>0);
+  fwP.forEach(p=>{fwX.save();fwX.globalAlpha=p.alpha;fwX.fillStyle=p.c;
+    fwX.beginPath();fwX.arc(p.x,p.y,p.sz,0,Math.PI*2);fwX.fill();fwX.restore();
+    p.x+=p.vx;p.y+=p.vy+.06;p.vx*=.98;p.vy*=.98;p.alpha-=p.dc;});
+  if(fwC.classList.contains('show'))fwRaf=requestAnimationFrame(drawFW);
+}
+function stopFW(){fwC.classList.remove('show');clearInterval(fwIv);if(fwRaf)cancelAnimationFrame(fwRaf);fwX.clearRect(0,0,fwC.width,fwC.height);fwP=[];}
+
+// ══════════════════════════════════════════════════════
+//  BEEP
+// ══════════════════════════════════════════════════════
+function playBeep(){
+  try{const ac=new(window.AudioContext||window.webkitAudioContext)();
+    [523,659,784,1047].forEach((f,i)=>{const o=ac.createOscillator(),g=ac.createGain();
+      o.connect(g);g.connect(ac.destination);o.frequency.value=f;o.type='sine';
+      g.gain.setValueAtTime(.3,ac.currentTime+i*.15);
+      g.gain.exponentialRampToValueAtTime(.001,ac.currentTime+i*.15+.4);
+      o.start(ac.currentTime+i*.15);o.stop(ac.currentTime+i*.15+.4);});}catch(e){}
+}
+
+// ══════════════════════════════════════════════════════
+//  DECO
+// ══════════════════════════════════════════════════════
+function buildDeco(){
+  const c=document.getElementById('deco');
+  for(let i=0;i<14;i++){const el=document.createElement('div');el.className='dh';
+    el.textContent=Math.random()>.5?'♥':'♡';el.style.left=Math.random()*100+'vw';
+    el.style.animationDuration=(Math.random()*14+9)+'s';el.style.animationDelay=(Math.random()*8)+'s';
+    el.style.fontSize=(Math.random()*14+8)+'px';c.appendChild(el);}
+}
+</script>
+</body>
+</html>
